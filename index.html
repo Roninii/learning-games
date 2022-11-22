@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Practice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      body {
+        font-family: "Sacramento", cursive;
+      }
+
+      .problem {
+        font-size: 2rem;
+        display: inline-grid;
+        grid-template-areas:
+          ". num1"
+          "operator num2";
+        column-gap: 0.5rem;
+        border-bottom: 2px solid black;
+      }
+      .num1 {
+        grid-area: num1;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0;
+      }
+      .num2 {
+        grid-area: num2;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0;
+      }
+      .operator {
+        grid-area: operator;
+        font-weight: bold;
+        margin: 0;
+      }
+      .answer {
+        padding-top: 1rem;
+      }
+
+      #next {
+        transition: all 0.3s ease-out;
+      }
+      .hidden {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="min-h-screen grid place-items-center">
+      <div>
+        <div>
+          <!-- TODO: add attribution -->
+          <!-- <img src="./noun-settings-5318453.svg" alt="Settings Icon" /> -->
+        </div>
+        <h1 class="text-center text-4xl">Math Practice</h1>
+        <div class="flex justify-end">
+          <div id="problem" class="problem"></div>
+        </div>
+        <form class="answer">
+          <input type="number" name="answer" id="answer" />
+          <button id="check-answer">Check Answer</button>
+        </form>
+        <p id="message" class="message"></p>
+        <button id="next" class="hidden">Try Another?</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+    <script>
+      const problemEl = document.querySelector("#problem");
+      const messageEl = document.querySelector("#message");
+      const answerInput = document.querySelector("input[name=answer]");
+      const checkAnswerBtn = document.querySelector("#check-answer");
+      const nextProblemBtn = document.querySelector("#next");
+
+      const jsConfetti = new JSConfetti();
+
+      // The Highest number that will appear
+      const highestNumber = 20;
+      // Possible operators
+      const operators = ["+", "-"];
+
+      let number1, number2, operator;
+      const generateProblem = (highestNumber, operators) => {
+        // Generate two random numbers
+        number1 = Math.floor(Math.random() * highestNumber + 1);
+        number2 = Math.floor(Math.random() * highestNumber + 1);
+        // Rearrange the numbers so that the larger number is always first
+        if (number2 > number1) [number1, number2] = [number2, number1];
+
+        // Select a random operator
+        operator = operators[Math.floor(Math.random() * operators.length)];
+
+        // Render the problem
+        problemEl.innerHTML = `
+        <p class='num1'>${number1}</p>
+        <p class='operator'>${operator}</p> <p class='num2'>${number2}</p>`;
+      };
+
+      const evalProblem = (num1, num2, operator) => {
+        switch (operator) {
+          case "+":
+            return num1 + num2;
+          case "-":
+            return num1 - num2;
+          case "*":
+            return num1 * num2;
+          case "/":
+            return num1 / num2;
+        }
+      };
+
+      const checkAnswer = (e) => {
+        e.preventDefault();
+
+        if (isNaN(parseInt(answerInput.value))) {
+          const error = "Please enter a number";
+          messageEl.innerHTML = error;
+          return;
+        }
+
+        // Clear the error
+        messageEl.innerHTML = "";
+
+        // Get the answer from the input and compare to the actual answer
+        const userAnswer = parseInt(answerInput.value);
+        const answer = evalProblem(number1, number2, operator);
+
+        if (userAnswer === answer) {
+          messageEl.innerHTML = "Correct!";
+          setTimeout(() => {
+            nextProblemBtn.classList.toggle("hidden");
+          }, 1000);
+
+          answerInput.setAttribute("disabled", true);
+          checkAnswerBtn.setAttribute("disabled", true);
+
+          jsConfetti.addConfetti({
+            emojis: ["🌈", "🦄", "✨", "💫"],
+          });
+        } else messageEl.innerHTML = `Oops. Try Again!`;
+      };
+
+      const reset = () => {
+        answerInput.value = "";
+        messageEl.innerHTML = "";
+        answerInput.removeAttribute("disabled");
+        checkAnswerBtn.removeAttribute("disabled");
+
+        nextProblemBtn.classList.toggle("hidden");
+        generateProblem(highestNumber, operators);
+      };
+
+      generateProblem(highestNumber, operators);
+      checkAnswerBtn.addEventListener("click", checkAnswer);
+      nextProblemBtn.addEventListener("click", reset);
+    </script>
+  </body>
+</html>
